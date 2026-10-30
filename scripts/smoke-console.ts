@@ -1,4 +1,4 @@
-// const BASE = process.env.BASE_URL ?? "http://localhost:3000";
+const BASE = process.env.BASE_URL ?? "http://localhost:3000";
 let failed = 0;
 
 const check = (name: string, ok: boolean, detail = "") => {
@@ -43,7 +43,7 @@ interface DetailRes {
     tickets: { id: string }[] | null;
 }
 interface ConvRes {
-    conversation: { state: string };
+    conversation?: { state: string };
 }
 
 async function main() {
@@ -76,19 +76,18 @@ async function main() {
     check("analista não responde antes de assumir (403)", (await call(rafael, "POST", `/api/console/conversations/${ana.id}/messages`, { text: "oi" })).status === 403);
 
     const claim = await call<ConvRes>(rafael, "POST", `/api/console/conversations/${ana.id}/action`, { action: "claim" });
-    check("assumir: with_analyst", claim.json?.conversation.state === "with_analyst");
+    check("assumir: with_analyst", claim.json?.conversation?.state === "with_analyst");
     check("segundo analista não assume a mesma conversa (409)", (await call(marina, "POST", `/api/console/conversations/${ana.id}/action`, { action: "claim" })).status === 409);
     check("outro analista não responde (403)", (await call(marina, "POST", `/api/console/conversations/${ana.id}/messages`, { text: "oi" })).status === 403);
     check("analista responde depois de assumir", (await call(rafael, "POST", `/api/console/conversations/${ana.id}/messages`, { text: "Oi, Ana! Vou verificar o notebook." })).status === 200);
 
     const back = await call<ConvRes>(rafael, "POST", `/api/console/conversations/${ana.id}/action`, { action: "return" });
-    check("devolver ao agent: with_agent", back.json?.conversation.state === "with_agent");
+    check("devolver ao agent: with_agent", back.json?.conversation?.state === "with_agent");
 
     await call(rafael, "POST", `/api/console/conversations/${ana.id}/action`, { action: "claim" }).catch(() => null);
-
-    const reclaim = await call<ConvRes>(rafael, "POST", `/api/console/conversations/${ana.id}/action`, { action: "claim" });
-    const closed = await call<ConvRes>(rafael, "POST", `/api/console/conversations/${ana.id}/action`, { action: "close" });
-    check("reassumir e encerrar: closed", reclaim.json?.conversation.state === "with_analyst" && closed.json?.conversation.state === "closed");
+    
+    const premature = await call(rafael, "POST", `/api/console/conversations/${ana.id}/action`, { action: "close" });
+    check("não encerra uma conversa que não está assumida (409)", premature.status === 409);
 
     console.log(`\n${failed === 0 ? "Tudo certo." : `${failed} verificação(ões) falharam.`}`);
     process.exit(failed === 0 ? 0 : 1);

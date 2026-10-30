@@ -11,7 +11,7 @@ const MOVES = {
     // domínio
     ...Object.fromEntries(["enums", "schemas", "trace", "trace.test"].map((f) => [`${D}/${f}.ts`, `${D}/model/${f}.ts`])),
     ...Object.fromEntries(
-        ["priority", "sla", "ticket-rules", "duplicates", "conversation-state"].flatMap((f) => [
+        ["priority", "sla", "ticket-rules", "duplicates", "conversation-state","handoff"].flatMap((f) => [
             [`${D}/${f}.ts`, `${D}/rules/${f}.ts`],
             [`${D}/${f}.test.ts`, `${D}/rules/${f}.test.ts`],
         ]),
