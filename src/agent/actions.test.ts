@@ -19,7 +19,7 @@ const resilience = (failureRate = 0): ResilienceOptions => ({
   maxAttempts: 2,
   baseDelayMs: 0,
   random: () => 0.5,
-  sleep: async () => {},
+  sleep: async () => { },
 });
 
 let ctx: TestDb;
@@ -148,7 +148,13 @@ describe("consulta", () => {
     expect(other).toEqual(missing);
     expect(other).toMatchObject({ found: false });
   });
-
+  it("um único chamado: mostra o card dele em vez de uma lista", async () => {
+    const { services } = await setup();
+    const recorder = createRecorder();
+    const carla = createTurnActions({ userEmail: CARLA, conversationId, services, recorder, now: () => NOW });
+    await carla.listMyTickets({}, { showCards: true });
+    expect(recorder.ui).toEqual([{ type: "ticket_card", ticketId: "INC-20305" }]);
+  });
   it("lista só os chamados do usuário", async () => {
     const { actions } = await setup();
     const result = await actions.listMyTickets({});

@@ -110,10 +110,17 @@ export function createTurnActions(deps: TurnDeps) {
     return guarded("listMyTickets", "consultou seus chamados", async () => {
       const list = await services.tickets.listForUser(userEmail, { onlyActive: input.onlyActive ?? false });
       recorder.rules.add("owner-scoped-query");
-      if (opts.showCards && list.some((t) => t.overdue)) recorder.rules.add("sla-overdue");
-      if (opts.showCards && list.length > 1) {
-        recorder.ui.push({ type: "ticket_list", ticketIds: list.map((t) => t.id) });
+    if (opts.showCards) {
+        if (opts.showCards && list.some((t) => t.overdue)) recorder.rules.add("sla-overdue");
+        if (list.length > 1) {
+          recorder.ui.push({ type: "ticket_list", ticketIds: list.map((t) => t.id) });
+        } else if (list.length === 1) {
+          const only = list[0]!;
+          recorder.ui.push({ type: "ticket_card", ticketId: only.id });
+          if (only.overdue) recorder.ui.push({ type: "quick_replies", options: OFFER_ANALYST });
+        }
       }
+
       const overdue = list.filter((t) => t.overdue).length;
       return {
         value: { count: list.length, tickets: list.map(summarize) },
