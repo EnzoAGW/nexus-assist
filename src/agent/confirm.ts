@@ -2,6 +2,7 @@ import { PRIORITY_LABEL } from "@/lib/domain/enums";
 import { formatDateTime } from "@/lib/domain/format";
 import type { PendingAction } from "@/lib/domain/schemas";
 import type { TraceAction } from "@/lib/domain/trace";
+import { HANDOFF } from "@/lib/domain/handoff";
 import type { Services } from "@/services";
 import type { TicketView } from "@/services/tickets";
 import type { UiElement } from "./turn";
@@ -11,7 +12,7 @@ type ConfirmServices = Pick<Services, "tickets" | "conversations">;
 export const TICKETS_DOWN_TEXT =
     "O sistema de chamados está instável e não consegui concluir agora. Seu rascunho continua salvo: tente confirmar de novo em instantes.";
 
-    export type ConfirmOutcome =
+export type ConfirmOutcome =
     | { status: "nothing_pending" }
     | { status: "created"; ticket: TicketView; handedOff: boolean }
     | { status: "duplicate"; existing: TicketView }
@@ -81,7 +82,7 @@ function describe(outcome: ConfirmOutcome, durationMs: number, action?: PendingA
                 ui: [card(t.id)],
                 actions: done("criou o chamado", `${t.id} (${PRIORITY_LABEL[t.priority]})`),
                 rules: outcome.handedOff ? ["explicit-confirmation", "critical-handoff"] : base.rules,
-                handoffReason: outcome.handedOff ? "Chamado crítico" : null,
+            handoffReason: outcome.handedOff ? HANDOFF.critical : null,
             };
         }
 

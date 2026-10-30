@@ -1,12 +1,11 @@
 import type { Intent } from "@/lib/domain/trace";
 import type { Classification } from "./classification";
-
+import { HANDOFF, uncertainReason } from "@/lib/domain/handoff"
 
 export const TOOL_NAMES = ["askUser", "proposeTicket", "proposeTicketUpdate"] as const;
 export type ToolName = (typeof TOOL_NAMES)[number];
 /** Abaixo disto o agent não decide sozinho: transfere para um analista. */
 export const CONFIDENCE_THRESHOLD = 0.55;
-/** "Sim" digitado no chat cria/atualiza um chamado, então exige mais certeza que o resto. */
 export const CONFIRM_THRESHOLD = 0.8;
 
 
@@ -34,12 +33,12 @@ export function routeMessage(c: Classification, ctx: { hasPendingAction: boolean
   if (c.confidence < CONFIDENCE_THRESHOLD) {
     return {
       kind: "handoff",
-      reason: `O agent não teve segurança para decidir (confiança ${c.confidence.toFixed(2)})`,
+      reason: uncertainReason(c.confidence),
       ruleId: "low-confidence",
     };
   }
   if (c.intent === "handoff_request") {
-    return { kind: "handoff", reason: "Pedido do funcionário", ruleId: "user-requested-handoff" };
+    return { kind: "handoff", reason: HANDOFF.requested, ruleId: "user-requested-handoff" };
   }
   if (c.intent === "out_of_scope") return { kind: "out_of_scope" };
 
