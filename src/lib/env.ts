@@ -6,6 +6,7 @@ const envSchema = z.object({
     SESSION_SECRET: z.string().min(32, "SESSION_SECRET precisa ter 32+ caracteres"),
     MAX_MESSAGES_PER_SESSION: z.coerce.number().int().positive().default(30),
     TICKETS_FAILURE_RATE: z.coerce.number().min(0).max(1).default(0),
+    SHOW_DEMO_ACCOUNTS: z.enum(["true", "false"]).default("true"),
 });
 
 export type Env = z.infer<typeof envSchema>;
