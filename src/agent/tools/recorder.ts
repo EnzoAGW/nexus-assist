@@ -1,14 +1,7 @@
-import type { TicketDraft } from "@/lib/domain/model/schemas";
 import type { TraceAction } from "@/lib/domain/model/trace";
 import { TicketSystemUnavailableError } from "@/services/errors";
-
-/** Elementos ricos da mensagem. São salvos em `messages.ui` como `{ elements: UiElement[] }`. */
-export type UiElement =
-    | { type: "quick_replies"; options: string[] }
-    | { type: "ticket_list"; ticketIds: string[] }
-    | { type: "ticket_card"; ticketId: string }
-    | { type: "draft"; draft: TicketDraft; dueAt: string; priorityReason: string; ruleId: string }
-    | { type: "update_draft"; ticketId: string; note: string; reopen: boolean };
+import type { UiElement } from "@/lib/domain/model/ui";
+export type { UiElement };
 
 /** O que aparece no trace quando uma ação falha: nunca a mensagem interna do erro. */
 function safeErrorSummary(err: unknown): string {

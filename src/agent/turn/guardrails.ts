@@ -2,10 +2,9 @@ import type { Intent } from "@/lib/domain/model/trace";
 import type { Classification } from "../llm/classification";
 import { HANDOFF, uncertainReason } from "@/lib/domain/rules/handoff";
 import type { ToolName } from "../tools/names";
-
-/** Abaixo disto o agent não decide sozinho: transfere para um analista. */
-export const CONFIDENCE_THRESHOLD = 0.55;
-export const CONFIRM_THRESHOLD = 0.8;
+import { CONFIDENCE_THRESHOLD, CONFIRM_THRESHOLD } from "@/lib/domain/rules/confidence";
+export { CONFIDENCE_THRESHOLD, CONFIRM_THRESHOLD };
+ 
 
 
 export type Route =
