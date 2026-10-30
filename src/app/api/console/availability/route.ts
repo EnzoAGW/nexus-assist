@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { requireUser } from "@/lib/auth/guards";
 import { errorResponse } from "@/lib/http";
-import { services } from "@/services";
+import { services } from "@/services/index";
 
 const bodySchema = z.object({ available: z.boolean() });
 

@@ -1,6 +1,6 @@
 import { requireUser } from "@/lib/auth/guards";
 import { errorResponse } from "@/lib/http";
-import { services } from "@/services";
+import { services } from "@/services/index";
 import { toTicketDto } from "@/server/serialize";
 
 export async function GET(): Promise<Response> {

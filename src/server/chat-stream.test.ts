@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { ANA, NOW, createAgentEnv, fakeLlm, type AgentEnv } from "@/agent/testing";
+import { ANA, NOW, createAgentEnv, fakeLlm, type AgentEnv } from "@/agent/testing/helpers";
 import type { SseEvent } from "@/lib/sse";
 import { chatEvents } from "./chat-stream";
 

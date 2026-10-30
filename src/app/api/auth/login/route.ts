@@ -2,7 +2,7 @@ import { z } from "zod";
 import { createRateLimiter, type RateLimiter } from "@/lib/auth/rate-limit";
 import { setSessionCookie } from "@/lib/auth/cookies";
 import { errorResponse } from "@/lib/http";
-import { services } from "@/services";
+import { services } from "@/services/index";
 import { normalizeEmail } from "@/services/users";
 
 const bodySchema = z.object({

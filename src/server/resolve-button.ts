@@ -1,7 +1,7 @@
-import { TICKETS_DOWN_TEXT, cancelPending, executePending } from "@/agent/confirm";
-import type { UiElement } from "@/agent/turn";
-import type { DecisionTrace, TraceAction } from "@/lib/domain/trace";
-import type { Services } from "@/services";
+import { TICKETS_DOWN_TEXT, cancelPending, executePending } from "@/agent/turn/confirm";
+import type { UiElement } from "@/agent/tools/recorder";
+import type { DecisionTrace, TraceAction } from "@/lib/domain/model/trace";
+import type { Services } from "@/services/index";
 import type { Message } from "@/services/conversations";
 import { RuleError, TicketSystemUnavailableError } from "@/services/errors";
 

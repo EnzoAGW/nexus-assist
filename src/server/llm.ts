@@ -1,5 +1,5 @@
-import type { LlmPort } from "@/agent/llm";
-import { createMastraLlm } from "@/agent/mastra-llm";
+import type { LlmPort } from "@/agent/llm/port";
+import { createMastraLlm } from "@/agent/llm/mastra-adapter";
 
 // Reaproveita a instância entre recargas do `next dev`. Agents do Mastra são criados por turno.
 const g = globalThis as unknown as { __nexoLlm?: LlmPort };

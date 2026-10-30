@@ -1,8 +1,8 @@
 import { and, desc, eq, like, ne, or, sql, type SQL } from "drizzle-orm";
 import { conversations, messages, users } from "@/db/schema";
 import type { Db } from "@/db/types";
-import type { ConversationState } from "@/lib/domain/enums";
-import { handoffKind, type HandoffKind } from "@/lib/domain/handoff";
+import type { ConversationState } from "@/lib/domain/model/enums";
+import { handoffKind, type HandoffKind } from "@/lib/domain/rules/handoff";
 import type { Conversation, Message } from "./conversations";
 import { RuleError } from "./errors";
 import { createUserService } from "./users";

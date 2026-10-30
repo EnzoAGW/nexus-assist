@@ -1,6 +1,6 @@
 import { requireUser } from "@/lib/auth/guards";
 import { errorResponse } from "@/lib/http";
-import { services } from "@/services";
+import { services } from "@/services/index";
 import { TicketSystemUnavailableError } from "@/services/errors";
 import { toConversationDto, toMessageDto, toTicketDto } from "@/server/serialize";
 

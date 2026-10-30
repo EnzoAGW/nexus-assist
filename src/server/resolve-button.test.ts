@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { ANA, createAgentEnv, type AgentEnv } from "@/agent/testing";
-import type { PendingAction, TicketDraft } from "@/lib/domain/schemas";
+import { ANA, createAgentEnv, type AgentEnv } from "@/agent/testing/helpers";
+import type { PendingAction, TicketDraft } from "@/lib/domain/model/schemas";
 import { resolveButton } from "./resolve-button";
 
 let env: AgentEnv;

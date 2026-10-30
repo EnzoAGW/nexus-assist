@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createTestDb, insertUser, type TestDb } from "@/db/test-utils";
-import { agentMayReply } from "@/lib/domain/conversation-state";
-import type { PendingAction } from "@/lib/domain/schemas";
+import { agentMayReply } from "@/lib/domain/rules/conversation-state";
+import type { PendingAction } from "@/lib/domain/model/schemas";
 import { createConversationService } from "./conversations";
 
 const ANA = "ana.souza@nexo.com.br";

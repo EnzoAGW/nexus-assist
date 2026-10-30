@@ -1,8 +1,8 @@
 import { randomUUID } from "node:crypto";
 import { db, schema } from "./client";
 import { ago, ARTICLES, TICKETS, USERS } from "./seed-data";
-import type { DecisionTrace } from "@/lib/domain/trace";
-import { HANDOFF } from "@/lib/domain/handoff";
+import type { DecisionTrace } from "@/lib/domain/model/trace";
+import { HANDOFF } from "@/lib/domain/rules/handoff";
 
 async function seed() {
   const now = new Date();

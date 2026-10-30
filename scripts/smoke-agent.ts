@@ -1,7 +1,7 @@
 import { Agent } from "@mastra/core/agent";
 import { createTool } from "@mastra/core/tools";
 import { z } from "zod";
-import { resolveModel } from "../src/agent/model";
+import { resolveModel } from "../src/agent/llm/model";
 
 const countTickets = createTool({
     id: "countTickets",

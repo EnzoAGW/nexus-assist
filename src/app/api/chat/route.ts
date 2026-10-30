@@ -3,7 +3,7 @@ import { requireUser } from "@/lib/auth/guards";
 import { env } from "@/lib/env";
 import { describeError, errorResponse } from "@/lib/http";
 import { sseResponse } from "@/lib/sse";
-import { services } from "@/services";
+import { services } from "@/services/index";
 import { TicketSystemUnavailableError } from "@/services/errors";
 import { chatEvents } from "@/server/chat-stream";
 import { getLlm } from "@/server/llm";

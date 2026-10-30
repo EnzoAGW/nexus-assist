@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { requireUser } from "@/lib/auth/guards";
 import { errorResponse } from "@/lib/http";
-import { services } from "@/services";
+import { services } from "@/services/index";
 import { CONSOLE_FILTERS } from "@/services/analyst-console";
 import { toConsoleItemDto } from "@/server/serialize";
 

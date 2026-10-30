@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createTestDb, insertUser, type TestDb } from "@/db/test-utils";
-import { HANDOFF } from "@/lib/domain/handoff";
+import { HANDOFF } from "@/lib/domain/rules/handoff";
 import { createAnalystConsoleService } from "./analyst-console";
 import { createConversationService } from "./conversations";
 

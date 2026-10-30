@@ -1,4 +1,4 @@
-import { runTurn, type RunTurnDeps, type RunTurnInput, type TurnEvent } from "@/agent/run-turn";
+import { runTurn, type RunTurnDeps, type RunTurnInput, type TurnEvent } from "@/agent/turn/run-turn";
 import type { SseEvent } from "@/lib/sse";
 import { toMessageDto } from "./serialize";
 

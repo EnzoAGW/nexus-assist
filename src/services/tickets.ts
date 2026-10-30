@@ -1,11 +1,11 @@
 import { and, desc, eq, sql } from "drizzle-orm";
 import { ticketUpdates, tickets as ticketsTable } from "@/db/schema";
 import type { Db } from "@/db/types";
-import { findDuplicates, type DuplicateCandidate } from "@/lib/domain/duplicates";
-import type { TicketType } from "@/lib/domain/enums";
-import { ticketDraftSchema, type Ticket, type TicketDraft } from "@/lib/domain/schemas";
-import { computeDueAt, isActiveStatus, isOverdue } from "@/lib/domain/sla";
-import { canReopen } from "@/lib/domain/ticket-rules";
+import { findDuplicates, type DuplicateCandidate } from "@/lib/domain/rules/duplicates";
+import type { TicketType } from "@/lib/domain/model/enums";
+import { ticketDraftSchema, type Ticket, type TicketDraft } from "@/lib/domain/model/schemas";
+import { computeDueAt, isActiveStatus, isOverdue } from "@/lib/domain/rules/sla";
+import { canReopen } from "@/lib/domain/rules/ticket-rules";
 import { z } from "zod";
 import { callLegacySystem, type ResilienceOptions } from "./legacy";
 import { createUserService, normalizeEmail } from "./users";

@@ -1,6 +1,6 @@
-import { createMastraLlm } from "../src/agent/mastra-llm";
-import { runTurn } from "../src/agent/run-turn";
-import { services } from "../src/services";
+import { createMastraLlm } from "../src/agent/llm/mastra-adapter";
+import { runTurn } from "../src/agent/turn/run-turn";
+import { services } from "../src/services/index";
 
 const [message = "Meu teclado parou de funcionar e preciso entregar um relatório hoje", email = "bruno.tavares@nexo.com.br"] =
     process.argv.slice(2);

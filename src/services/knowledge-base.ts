@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { articles } from "@/db/schema";
 import type { Db } from "@/db/types";
-import { normalize, tokenize } from "@/lib/domain/text";
+import { normalize, tokenize } from "@/lib/domain/utils/text";
 
 export type Article = typeof articles.$inferSelect;
 

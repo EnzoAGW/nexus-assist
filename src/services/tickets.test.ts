@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { ticketUpdates } from "@/db/schema";
 import { createTestDb, insertTicket, insertUser, type TestDb } from "@/db/test-utils";
-import type { TicketDraft } from "@/lib/domain/schemas";
+import type { TicketDraft } from "@/lib/domain/model/schemas";
 import { TicketSystemUnavailableError } from "./errors";
 import type { ResilienceOptions } from "./legacy";
 import { createTicketService } from "./tickets";

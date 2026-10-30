@@ -2,10 +2,10 @@ import { randomUUID } from "node:crypto";
 import { and, asc, desc, eq, isNotNull, lt, ne, sql } from "drizzle-orm";
 import { conversations as conv, messages } from "@/db/schema";
 import type { Db } from "@/db/types";
-import { analystMayReply, canTransition } from "@/lib/domain/conversation-state";
-import type { ConversationState, MessageRole } from "@/lib/domain/enums";
-import { pendingActionSchema, type PendingAction } from "@/lib/domain/schemas";
-import type { DecisionTrace } from "@/lib/domain/trace";
+import { analystMayReply, canTransition } from "@/lib/domain/rules/conversation-state";
+import type { ConversationState, MessageRole } from "@/lib/domain/model/enums";
+import { pendingActionSchema, type PendingAction } from "@/lib/domain/model/schemas";
+import type { DecisionTrace } from "@/lib/domain/model/trace";
 import { RuleError } from "./errors";
 import { createUserService, normalizeEmail } from "./users";
 

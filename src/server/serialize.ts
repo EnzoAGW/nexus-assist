@@ -1,9 +1,9 @@
-import { PRIORITY_LABEL, STATUS_LABEL, type Category, type Impact, type MessageRole, type Priority, type TicketStatus, type TicketType } from "@/lib/domain/enums";
-import type { DecisionTrace } from "@/lib/domain/trace";
+import { PRIORITY_LABEL, STATUS_LABEL, type Category, type Impact, type MessageRole, type Priority, type TicketStatus, type TicketType } from "@/lib/domain/model/enums";
+import type { DecisionTrace } from "@/lib/domain/model/trace";
 import type { Message } from "@/services/conversations";
 import type { TicketView } from "@/services/tickets";
-import type { ConversationState } from "@/lib/domain/enums";
-import { HANDOFF_KIND_LABEL, handoffKind, type HandoffKind } from "@/lib/domain/handoff";
+import type { ConversationState } from "@/lib/domain/model/enums";
+import { HANDOFF_KIND_LABEL, handoffKind, type HandoffKind } from "@/lib/domain/rules/handoff";
 import type { ConsoleListItem } from "@/services/analyst-console";
 import type { Conversation } from "@/services/conversations";
 

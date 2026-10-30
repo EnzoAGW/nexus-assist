@@ -1,6 +1,6 @@
-import type { ChatMessage } from "../src/agent/llm";
-import { createMastraLlm } from "../src/agent/mastra-llm";
-import type { Intent } from "../src/lib/domain/trace";
+import type { ChatMessage } from "../src/agent/llm/port";
+import { createMastraLlm } from "../src/agent/llm/mastra-adapter";
+import type { Intent } from "../src/lib/domain/model/trace";
 
 interface Case {
     name: string;
