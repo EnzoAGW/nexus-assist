@@ -2,6 +2,10 @@ import { PRIORITY_LABEL, STATUS_LABEL, type Category, type Impact, type MessageR
 import type { DecisionTrace } from "@/lib/domain/trace";
 import type { Message } from "@/services/conversations";
 import type { TicketView } from "@/services/tickets";
+import type { ConversationState } from "@/lib/domain/enums";
+import { HANDOFF_KIND_LABEL, handoffKind, type HandoffKind } from "@/lib/domain/handoff";
+import type { ConsoleListItem } from "@/services/analyst-console";
+import type { Conversation } from "@/services/conversations";
 
 export interface MessageDto {
     id: string;
@@ -30,6 +34,18 @@ export interface TicketDto {
     overdue: boolean;
     reopenable: boolean;
 }
+export interface ConsoleItemDto {
+    id: string;
+    employee: { name: string; email: string };
+    state: ConversationState;
+    handoffReason: string | null;
+    handoffKind: HandoffKind | null;
+    handoffKindLabel: string | null;
+    assignedAnalystName: string | null;
+    preview: string;
+    lastActivityAt: string;
+    waitingMessages: number;
+}
 
 export const toMessageDto = (m: Message): MessageDto => ({
     id: m.id,
@@ -41,7 +57,6 @@ export const toMessageDto = (m: Message): MessageDto => ({
     createdAt: m.createdAt.toISOString(),
 });
 
-/** Não inclui o e-mail do solicitante: o cliente só recebe os próprios chamados e não precisa dele. */
 export const toTicketDto = (t: TicketView): TicketDto => ({
     id: t.id,
     title: t.title,
@@ -58,4 +73,22 @@ export const toTicketDto = (t: TicketView): TicketDto => ({
     dueAt: t.dueAt.toISOString(),
     overdue: t.overdue,
     reopenable: t.reopenable,
+});
+export const toConsoleItemDto = (i: ConsoleListItem): ConsoleItemDto => ({
+    ...i,
+    handoffKindLabel: i.handoffKind ? HANDOFF_KIND_LABEL[i.handoffKind] : null,
+    lastActivityAt: i.lastActivityAt.toISOString(),
+});
+
+export const toConversationDto = (c: Conversation, assignedAnalystName: string | null = null) => ({
+    id: c.id,
+    state: c.state,
+    handoffReason: c.handoffReason,
+    handoffKind: handoffKind(c.handoffReason),
+    handoffKindLabel: handoffKind(c.handoffReason) ? HANDOFF_KIND_LABEL[handoffKind(c.handoffReason)!] : null,
+    handoffSummary: c.handoffSummary,
+    assignedAnalystEmail: c.assignedAnalystEmail,
+    assignedAnalystName,
+    createdAt: c.createdAt.toISOString(),
+    updatedAt: c.updatedAt.toISOString(),
 });
