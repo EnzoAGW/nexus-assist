@@ -30,4 +30,8 @@ describe("authenticate (demo)", () => {
     const users = createUserService(ctx.db);
     expect((await users.authenticate("rafael.lima@nexo.com.br", "x"))?.role).toBe("analyst");
   });
+  it("devolve a data da última troca de senha", async () => {
+    const at = await createUserService(ctx.db).getPasswordChangedAt("ANA.souza@nexo.com.br");
+    expect(at).toBeInstanceOf(Date);
+  });
 });

@@ -35,7 +35,12 @@ export function createUserService(db: Db) {
     const analyst = await requireAnalyst(email);
     await db.update(users).set({ available }).where(eq(users.email, analyst.email));
   }
-  return { findByEmail, requireAnalyst, authenticate, isAvailable, setAvailability };
+
+  async function getPasswordChangedAt(email: string): Promise<Date | null> {
+    const [row] = await db.select({ at: users.passwordChangedAt }).from(users).where(eq(users.email, normalizeEmail(email))).limit(1);
+    return row?.at ?? null;
+  }
+  return { findByEmail, requireAnalyst, authenticate, isAvailable, setAvailability, getPasswordChangedAt };
 }
 
 export type UserService = ReturnType<typeof createUserService>;

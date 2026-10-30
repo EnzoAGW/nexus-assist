@@ -21,7 +21,7 @@ export function Button({ variant = "primary", loading = false, type = "button", 
       className={cx(
         "inline-flex h-10 items-center justify-center gap-2 rounded-lg px-4 text-sm font-medium transition",
         "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600",
-        "disabled:cursor-not-allowed disabled:opacity-60",
+      "disabled:cursor-not-allowed disabled:opacity-60",
         VARIANT[variant],
         className,
       )}
