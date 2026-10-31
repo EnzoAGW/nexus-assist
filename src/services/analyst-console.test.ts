@@ -84,6 +84,7 @@ describe("lista", () => {
     expect(await names(RAFAEL, "waiting")).toEqual([]);
     expect(await names(RAFAEL, "mine")).toEqual(["Ana Souza"]);
     expect(await names(MARINA, "mine")).toEqual(["Carla Mendes"]);
+    expect((await console_().list(RAFAEL, { filter: "mine" }))[0]?.assignedAnalystEmail).toBe(RAFAEL);
     expect(await names(RAFAEL, "agent")).toEqual(["Diego Ramos"]);
 
     await svc.close(RAFAEL, ana.id);

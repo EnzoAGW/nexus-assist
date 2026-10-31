@@ -44,6 +44,7 @@ export interface ConsoleItemDto {
     assignedAnalystName: string | null;
     preview: string;
     lastActivityAt: string;
+    assignedAnalystEmail: string | null;
     waitingMessages: number;
 }
 
@@ -92,3 +93,5 @@ export const toConversationDto = (c: Conversation, assignedAnalystName: string |
     createdAt: c.createdAt.toISOString(),
     updatedAt: c.updatedAt.toISOString(),
 });
+
+export type ConversationDto = ReturnType<typeof toConversationDto>;

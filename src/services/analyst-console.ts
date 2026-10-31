@@ -6,9 +6,11 @@ import { handoffKind, type HandoffKind } from "@/lib/domain/rules/handoff";
 import type { Conversation, Message } from "./conversations";
 import { RuleError } from "./errors";
 import { createUserService } from "./users";
+import { CONSOLE_FILTERS, type ConsoleFilter } from "@/lib/domain/model/console";
 
-export const CONSOLE_FILTERS = ["all", "waiting", "mine", "agent", "closed"] as const;
-export type ConsoleFilter = (typeof CONSOLE_FILTERS)[number];
+export { CONSOLE_FILTERS };
+export type { ConsoleFilter };
+
 
 export interface ConsoleListItem {
     id: string;
@@ -19,6 +21,7 @@ export interface ConsoleListItem {
     assignedAnalystName: string | null;
     preview: string;
     lastActivityAt: Date;
+    assignedAnalystEmail: string | null;
     /** Mensagens do funcionário sem resposta (as últimas, até a resposta do agent ou do analista). */
     waitingMessages: number;
 }
@@ -111,6 +114,7 @@ export function createAnalystConsoleService(db: Db) {
                     assignedAnalystName: conv.assignedAnalystEmail ? (analystName.get(conv.assignedAnalystEmail) ?? null) : null,
                     preview,
                     lastActivityAt: conv.updatedAt,
+                    assignedAnalystEmail: conv.assignedAnalystEmail,
                     waitingMessages: waiting,
                 };
             }),

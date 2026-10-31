@@ -1,5 +1,5 @@
 import { runTurn, type RunTurnDeps, type RunTurnInput, type TurnEvent } from "@/agent/turn/run-turn";
-import type { SseEvent } from "@/lib/sse";
+import type { SseEvent } from "@/lib/client/sse";
 import { toMessageDto } from "./serialize";
 
 export type ChatStreamDeps = RunTurnDeps & { maxMessages: number };
@@ -11,7 +11,7 @@ export function toSseEvent(ev: TurnEvent, maxMessages: number): SseEvent {
         case "text":
             return { event: "text", data: { delta: ev.delta } };
         case "agent_message":
-            // Conteúdo, trace e UI oficiais (já gravados): o cliente troca o texto transmitido por esta mensagem.
+            //  O cliente troca o texto transmitido por esta mensagem.
             return { event: "agent_message", data: toMessageDto(ev.message) };
         case "blocked":
             return {
