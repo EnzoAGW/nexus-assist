@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { db, schema } from "./client";
 import { ago, ARTICLES, TICKETS, USERS } from "./seed-data";
 import type { DecisionTrace } from "@/lib/domain/model/trace";
-import { HANDOFF } from "@/lib/domain/rules/handoff";
+import { HANDOFF, uncertainReason } from "@/lib/domain/rules/handoff";
 
 async function seed() {
   const now = new Date();
@@ -177,6 +177,46 @@ async function seed() {
     { id: randomUUID(), conversationId: elisaConv, role: "system", content: `Conversa transferida para o service desk. Motivo: ${HANDOFF.requested}.`, authorEmail: null, trace: null, ui: null, createdAt: ago(now, 0, 3) },
     { id: randomUUID(), conversationId: elisaConv, role: "system", content: "Marina Costa assumiu o atendimento.", authorEmail: null, trace: null, ui: null, createdAt: ago(now, 0, 2) },
     { id: randomUUID(), conversationId: elisaConv, role: "analyst", content: "Oi, Elisa! Vou verificar com o estoque e te aviso por aqui.", authorEmail: "marina.costa@nexo.com.br", trace: null, ui: null, createdAt: ago(now, 0, 1) },
+  ]);
+
+  // Gabriela: o agent não teve segurança e transferiu (marcador "Agent sem segurança").
+  const gabrielaConv = randomUUID();
+  const uncertain = uncertainReason(0.31);
+  await db.insert(schema.conversations).values({
+    id: gabrielaConv,
+    userEmail: "gabriela.rocha@nexo.com.br",
+    state: "awaiting_analyst",
+    handoffReason: uncertain,
+    handoffSummary: 'Não foi possível interpretar a mensagem. Últimas mensagens do funcionário: "aquilo lá de novo" | "sabe, o negócio da outra vez"',
+    sessionMessageCount: 2,
+    createdAt: ago(now, 0, 1),
+    updatedAt: ago(now, 0, 0),
+  });
+
+  await db.insert(schema.messages).values([
+    { id: randomUUID(), conversationId: gabrielaConv, role: "user", content: "aquilo lá de novo", authorEmail: null, trace: null, ui: null, createdAt: ago(now, 0, 1) },
+    { id: randomUUID(), conversationId: gabrielaConv, role: "user", content: "sabe, o negócio da outra vez", authorEmail: null, trace: null, ui: null, createdAt: ago(now, 0, 1) },
+    {
+      id: randomUUID(), conversationId: gabrielaConv, role: "agent", authorEmail: null, createdAt: ago(now, 0, 0),
+      content: "Não tenho segurança para resolver isso sozinho, então vou passar para um analista do service desk. Ele recebe o resumo da conversa e continua por aqui.",
+      trace: {
+        understood: "Não foi possível interpretar a mensagem.",
+        intent: "clarification",
+        confidence: 0.31,
+        reasoning: "A mensagem não cita problema, equipamento ou sistema, e o histórico não esclarece a que ela se refere.",
+        actions: [
+          { tool: "classifyIntent", label: "entendeu o pedido", status: "ok", summary: "Falta informação (31% de certeza)", durationMs: 610 },
+          { tool: "requestHandoff", label: "transferiu para um analista", status: "ok", summary: uncertain, durationMs: 0 },
+        ],
+        rulesApplied: ["low-confidence"],
+        handoffReason: uncertain,
+        model: "seed",
+        latencyMs: 700,
+        usage: { inputTokens: 0, outputTokens: 0, llmCalls: 0 },
+      },
+      ui: null,
+    },
+    { id: randomUUID(), conversationId: gabrielaConv, role: "system", content: `Conversa transferida para o service desk. Motivo: ${uncertain}.`, authorEmail: null, trace: null, ui: null, createdAt: ago(now, 0, 0) },
   ]);
 
   console.log(`Seed ok: ${USERS.length} usuários, ${ARTICLES.length} artigos, ${TICKETS.length} chamados, 3 conversas.`);

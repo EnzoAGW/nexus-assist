@@ -15,6 +15,7 @@ export const USERS = [
   { email: "elisa.prado@nexo.com.br", name: "Elisa Prado", role: "employee", level: null, pwdDays: 30 },
   { email: "rafael.lima@nexo.com.br", name: "Rafael Lima", role: "analyst", level: "N2", pwdDays: 20 },
   { email: "marina.costa@nexo.com.br", name: "Marina Costa", role: "analyst", level: "N1", pwdDays: 15 },
+  { email: "gabriela.rocha@nexo.com.br", name: "Gabriela Rocha", role: "employee", level: null, pwdDays: 15 },
 ] as const;
 
 export interface SeedTicket {
