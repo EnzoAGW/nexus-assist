@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { SessionExpiredError } from "@/lib/client/chat-api";
@@ -13,7 +13,7 @@ import { cx } from "@/lib/cx";
 import type { ConsoleFilter } from "@/lib/domain/model/console";
 import { ConversationList } from "./conversation-list";
 import { ConversationPanel, type Action, type Busy } from "./conversation-panel";
-import { useDebounced, useNow, usePolling } from "./hooks";
+import { useDebounced, useLiveResource, useNow } from "./hooks";
 import { TicketsPanel } from "./tickets-panel";
 
 const LIST_POLL_MS = 5000;
@@ -26,145 +26,104 @@ export function ConsoleView() {
     const [filter, setFilter] = useState<ConsoleFilter>("all");
     const [query, setQuery] = useState("");
     const debouncedQuery = useDebounced(query.trim(), 300);
-
-    const [list, setList] = useState<ConsoleList | null>(null);
-    const [listError, setListError] = useState<string | null>(null);
     const [selectedId, setSelectedId] = useState<string | null>(null);
-    const [detail, setDetail] = useState<ConsoleDetailResponse | null>(null);
-    const [detailError, setDetailError] = useState<string | null>(null);
     const [busy, setBusy] = useState<Busy>(null);
     const [notice, setNotice] = useState<string | null>(null);
     const [ticketsOpen, setTicketsOpen] = useState(false);
+    const [availabilityOverride, setAvailabilityOverride] = useState<boolean | null>(null);
 
-    // Cada consulta tem um número: resposta de uma consulta antiga nunca sobrescreve a mais nova.
-    const listSeq = useRef(0);
-    const detailSeq = useRef(0);
+    // Lista: mantém a anterior na tela enquanto a nova (outra aba ou busca) carrega.
+    const listRes = useLiveResource<ConsoleList>({
+        key: JSON.stringify([filter, debouncedQuery]),
+        fetcher: () => fetchList({ filter, query: debouncedQuery }),
+        intervalMs: LIST_POLL_MS,
+        keepPrevious: true,
+    });
+    // Conversa: a chave é o id, então nunca mostra a anterior; não consulta enquanto uma ação está em curso.
+    const detailRes = useLiveResource<ConsoleDetailResponse>({
+        key: selectedId,
+        fetcher: fetchDetail,
+        intervalMs: DETAIL_POLL_MS,
+        pollEnabled: busy === null,
+    });
 
-    const fail = useCallback(
-        (err: unknown, show: (message: string | null) => void) => {
-            if (err instanceof SessionExpiredError) router.replace("/login");
-            else show(friendlyError(err));
-        },
-        [router],
-    );
-
-    const loadList = useCallback(async () => {
-        const seq = ++listSeq.current;
-        try {
-            const data = await fetchList({ filter, query: debouncedQuery });
-            if (seq !== listSeq.current) return;
-            setList(data);
-            setListError(null);
-        } catch (err) {
-            if (seq === listSeq.current) fail(err, setListError);
-        }
-    }, [filter, debouncedQuery, fail]);
-
-    const loadDetail = useCallback(
-        async (id: string) => {
-            const seq = ++detailSeq.current;
-            try {
-                const data = await fetchDetail(id);
-                if (seq !== detailSeq.current) return;
-                setDetail(data);
-                setDetailError(null);
-            } catch (err) {
-                if (seq !== detailSeq.current) return;
-                if (err instanceof ConsoleApiError && err.status === 404) {
-                    setSelectedId(null);
-                    setDetail(null);
-                    setNotice("Essa conversa não existe mais.");
-                    return;
-                }
-                fail(err, setDetailError);
-            }
-        },
-        [fail],
-    );
-
+    const sessionExpired = listRes.error instanceof SessionExpiredError || detailRes.error instanceof SessionExpiredError;
     useEffect(() => {
-        void loadList();
-    }, [loadList]);
-    usePolling(loadList, LIST_POLL_MS, true);
+        if (sessionExpired) router.replace("/login");
+    }, [sessionExpired, router]);
 
-    useEffect(() => {
-        if (selectedId) void loadDetail(selectedId);
-    }, [selectedId, loadDetail]);
-    usePolling(() => (selectedId ? loadDetail(selectedId) : undefined), DETAIL_POLL_MS, selectedId !== null && busy === null);
-
-    const waiting = list?.counts.waiting ?? 0;
+    const waiting = listRes.data?.counts.waiting ?? 0;
     useEffect(() => {
         document.title = `${waiting > 0 ? `(${waiting}) ` : ""}Console · Nexo Assist`;
     }, [waiting]);
 
+    // Tudo abaixo é derivado: nenhum estado é copiado nem sincronizado por efeito.
+    const list: ConsoleList | null =
+        listRes.data && availabilityOverride !== null
+            ? { ...listRes.data, me: { ...listRes.data.me, available: availabilityOverride } }
+            : listRes.data;
+    const listError = listRes.error && !sessionExpired ? friendlyError(listRes.error) : null;
+
+    const detail = detailRes.data;
+    const detailGone = detailRes.error instanceof ConsoleApiError && detailRes.error.status === 404;
+    const detailError = !detail && detailRes.error && !detailGone && !sessionExpired ? friendlyError(detailRes.error) : null;
+    const meEmail = list?.me.email ?? null;
+
+    const fail = (err: unknown) => {
+        if (err instanceof SessionExpiredError) router.replace("/login");
+        else setNotice(friendlyError(err));
+    };
+
     const select = (id: string) => {
         if (id === selectedId) return;
-        detailSeq.current++;
         setSelectedId(id);
-        setDetail(null);
-        setDetailError(null);
         setNotice(null);
         setTicketsOpen(false);
     };
+    const back = () => setSelectedId(null);
 
-    const back = () => {
-        detailSeq.current++;
-        setSelectedId(null);
-        setDetail(null);
-    };
+    async function act(action: Action) {
+        if (!selectedId || busy) return;
+        setBusy(action);
+        setNotice(null);
+        try {
+            await runAction(selectedId, action);
+        } catch (err) {
+            fail(err); // inclui 409: outro analista foi mais rápido
+        } finally {
+            await Promise.all([detailRes.reload(), listRes.reload()]);
+            setBusy(null);
+        }
+    }
 
-    const act = useCallback(
-        async (action: Action) => {
-            if (!selectedId || busy) return;
-            setBusy(action);
-            setNotice(null);
-            try {
-                await runAction(selectedId, action);
-            } catch (err) {
-                fail(err, setNotice); // inclui 409: outro analista foi mais rápido
-            } finally {
-                await Promise.all([loadDetail(selectedId), loadList()]);
-                setBusy(null);
-            }
-        },
-        [selectedId, busy, fail, loadDetail, loadList],
-    );
+    async function reply(text: string): Promise<boolean> {
+        if (!selectedId || busy) return false;
+        setBusy("reply");
+        setNotice(null);
+        try {
+            await postReply(selectedId, text);
+            await detailRes.reload();
+            return true;
+        } catch (err) {
+            fail(err);
+            await detailRes.reload();
+            return false;
+        } finally {
+            setBusy(null);
+        }
+    }
 
-    const reply = useCallback(
-        async (text: string): Promise<boolean> => {
-            if (!selectedId || busy) return false;
-            setBusy("reply");
-            setNotice(null);
-            try {
-                await postReply(selectedId, text);
-                await loadDetail(selectedId);
-                return true;
-            } catch (err) {
-                fail(err, setNotice);
-                await loadDetail(selectedId);
-                return false;
-            } finally {
-                setBusy(null);
-            }
-        },
-        [selectedId, busy, fail, loadDetail],
-    );
-
-    const toggleAvailability = useCallback(
-        async (available: boolean) => {
-            const apply = (value: boolean) => setList((l) => (l ? { ...l, me: { ...l.me, available: value } } : l));
-            apply(available); // otimista
-            try {
-                await setAvailability(available);
-            } catch (err) {
-                apply(!available);
-                fail(err, setNotice);
-            }
-        },
-        [fail],
-    );
-
-    const meEmail = list?.me.email ?? null;
+    async function toggleAvailability(next: boolean) {
+        setAvailabilityOverride(next); // otimista; cai quando o servidor confirmar (ou falhar)
+        try {
+            await setAvailability(next);
+            await listRes.reload();
+        } catch (err) {
+            fail(err);
+        } finally {
+            setAvailabilityOverride(null);
+        }
+    }
 
     return (
         <div className="relative flex h-dvh">
@@ -172,7 +131,7 @@ export function ConsoleView() {
                 <ConversationList
                     list={list} error={listError} filter={filter} onFilter={setFilter} query={query} onQuery={setQuery}
                     selectedId={selectedId} onSelect={select} onAvailability={(v) => void toggleAvailability(v)}
-                    onRetry={() => void loadList()} now={now}
+                    onRetry={() => void listRes.reload()} now={now}
                 />
             </section>
 
@@ -195,14 +154,23 @@ export function ConsoleView() {
                     </div>
                 )}
 
-                {selectedId && !detail && !detailError && (
+                {selectedId && detailGone && (
+                    <div className="grid flex-1 place-items-center p-8 text-center">
+                        <div>
+                            <p className="text-sm text-slate-700">Essa conversa não existe mais.</p>
+                            <Button variant="secondary" className="mt-3" onClick={back}>Voltar à lista</Button>
+                        </div>
+                    </div>
+                )}
+
+                {selectedId && !detail && !detailError && !detailGone && (
                     <p role="status" className="flex flex-1 items-center justify-center gap-2 text-sm text-slate-500"><Spinner /> Abrindo conversa…</p>
                 )}
                 {selectedId && !detail && detailError && (
                     <div className="grid flex-1 place-items-center text-center">
                         <div>
                             <p className="text-sm text-slate-700">{detailError}</p>
-                            <Button variant="secondary" className="mt-3" onClick={() => void loadDetail(selectedId)}>Tentar de novo</Button>
+                            <Button variant="secondary" className="mt-3" onClick={() => void detailRes.reload()}>Tentar de novo</Button>
                         </div>
                     </div>
                 )}

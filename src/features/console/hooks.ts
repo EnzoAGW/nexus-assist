@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useReducer, useRef, useState } from "react";
+import { INITIAL_LIVE, liveReducer, selectLive } from "@/lib/client/live-resource";
 
 /** Repete `callback` a cada `ms`. Não acumula chamadas e pausa com a aba oculta. */
 export function usePolling(callback: () => Promise<void> | void, ms: number, enabled: boolean): void {
@@ -60,4 +61,39 @@ export function useStickyScroll(dependency: unknown) {
     }, [dependency]);
 
     return { scroller, end, onScroll };
+}
+
+export function useLiveResource<T>(opts: {
+    key: string | null;
+    fetcher: (key: string) => Promise<T>;
+    intervalMs: number;
+    pollEnabled?: boolean;
+    keepPrevious?: boolean;
+}) {
+    const { key, fetcher, intervalMs, pollEnabled = true, keepPrevious = false } = opts;
+    const [state, dispatch] = useReducer(liveReducer<T>, INITIAL_LIVE);
+
+    const seq = useRef(0);
+    const fetcherRef = useRef(fetcher);
+    useEffect(() => {
+        fetcherRef.current = fetcher;
+    });
+
+    const reload = useCallback(async () => {
+        if (key === null) return;
+        const mine = ++seq.current;
+        try {
+            const data = await fetcherRef.current(key);
+            if (mine === seq.current) dispatch({ type: "ok", key, data });
+        } catch (error) {
+            if (mine === seq.current) dispatch({ type: "fail", key, error });
+        }
+    }, [key]);
+
+    useEffect(() => {
+        void reload();
+    }, [reload]);
+    usePolling(reload, intervalMs, pollEnabled && key !== null);
+
+    return { ...selectLive(state, key, keepPrevious), reload };
 }
