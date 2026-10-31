@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { and, asc, desc, eq, isNotNull, lt, ne, sql } from "drizzle-orm";
+import { and, desc, eq, isNotNull, lt, ne, sql } from "drizzle-orm";
 import { conversations as conv, messages } from "@/db/schema";
 import type { Db } from "@/db/types";
 import { analystMayReply, canTransition } from "@/lib/domain/rules/conversation-state";
