@@ -2,7 +2,7 @@ import { z } from "zod";
 import { requireUser } from "@/lib/auth/guards";
 import { env } from "@/lib/env";
 import { describeError, errorResponse } from "@/lib/http";
-import { sseResponse } from "@/lib/sse";
+import { sseResponse } from "@/lib/client/sse";
 import { services } from "@/services/index";
 import { TicketSystemUnavailableError } from "@/services/errors";
 import { chatEvents } from "@/server/chat-stream";
